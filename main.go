@@ -1,13 +1,18 @@
 package main
 
-import (
-	"fmt"
-	"math"
-)
+import "fmt"
+
+func min(a, b int) int {
+	if a <= b {
+		return a
+	} else {
+		return b
+	}
+}
 
 // calculating level graph using breadth-first search
 // e = (v, u) is in level graph <=> level[v] == level[u]+1
-func bfs(n, s, t int, graph [][]int, flow [][]float64, capacity [][]float64, level *[]int) bool {
+func bfs(n, s, t int, graph [][]int, flow [][]int, capacity [][]int, level *[]int) bool {
 	// initializing level as in standard bfs; setting s as a root
 	*level = make([]int, n)
 	for i := 0; i < n; i++ {
@@ -33,7 +38,7 @@ func bfs(n, s, t int, graph [][]int, flow [][]float64, capacity [][]float64, lev
 
 // creating blocking flow in level graph by finding augmenting paths using depth-first search
 // we consider current path to be s -> u, starting with u = s and finishing with u = t after
-func dfs(n, u, s, t int, currMin float64, graph [][]int, capacity [][]float64, flow *[][]float64, level []int, it []int) float64 {
+func dfs(n, u, s, t int, currMin int, graph [][]int, capacity [][]int, flow *[][]int, level []int, it []int) int {
 	// currMin is the lowest value of the residual edge in current path
 	if u == t {
 		return currMin
@@ -45,7 +50,7 @@ func dfs(n, u, s, t int, currMin float64, graph [][]int, capacity [][]float64, f
 		// checking if (u, v) is in both level graph and residual graph
 		if level[v] == level[u]+1 && capacity[u][v]-(*flow)[u][v] > 0 {
 			// calculating the lowest value of the residual edge in the rest of current path
-			restMin := dfs(n, v, s, t, math.Min(currMin, capacity[u][v]-(*flow)[u][v]), graph, capacity, flow, level, it)
+			restMin := dfs(n, v, s, t, min(currMin, capacity[u][v]-(*flow)[u][v]), graph, capacity, flow, level, it)
 			// updating the flow
 			if restMin > 0 {
 				(*flow)[u][v] += restMin
@@ -72,11 +77,11 @@ func main() {
 	// initializing graph as adjacency lists
 	graph := make([][]int, n)
 	// edges capacity and current flow as tables
-	capacity := make([][]float64, n)
-	flow := make([][]float64, n)
+	capacity := make([][]int, n)
+	flow := make([][]int, n)
 	for i := 0; i < n; i++ {
-		capacity[i] = make([]float64, n)
-		flow[i] = make([]float64, n)
+		capacity[i] = make([]int, n)
+		flow[i] = make([]int, n)
 	}
 	// vertex levels in level graph
 	level := make([]int, n)
@@ -84,7 +89,7 @@ func main() {
 	// building residual graph and initializing edges capacities
 	for i := 0; i < m; i++ {
 		var u, v int
-		var c float64
+		var c int
 		fmt.Scan(&u, &v, &c)
 		graph[u] = append(graph[u], v)
 		graph[v] = append(graph[v], u)
@@ -99,8 +104,8 @@ func main() {
 		}
 	}
 
-	// calculating final flow
-	res := 0.0
+	// calculating resulting flow
+	res := 0
 	for i := 0; i < n; i++ {
 		res += flow[i][t]
 	}
